@@ -8,6 +8,7 @@
 import UIKit
 
 class ViewController: UIViewController {
+    
     let mainSV = UIStackView()
     let imageSegmentSV = UIStackView()
     let buttonsSV = UIStackView()
@@ -21,27 +22,35 @@ class ViewController: UIViewController {
     let segmentControl = UISegmentedControl()
     let timeLabel = UILabel()
     let datePicker = UIDatePicker()
+    let pickerView = UIPickerView()
+    private var hours: Int = 0
+    private var minutes: Int = 0
+    private var seconds: Int = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemYellow
         configureMainSV()
+        
+        pickerView.delegate = self
+        pickerView.dataSource = self
     }
 }
 
 extension ViewController {
         //MARK: UI Elements and contraints
     func configureMainSV() {
-        //UI
+            //UI
         view.addSubview(mainSV)
         mainSV.axis = .vertical
-        mainSV.spacing = 100
+        mainSV.spacing = 30
         
         configureImageSegmentSV()
-        configureButtonsSV()
         configureLabel()
+        configurePickerView()
+        configureButtonsSV()
         
-            //Constraints
+        //Constraints
         mainSV.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             mainSV.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
@@ -54,7 +63,6 @@ extension ViewController {
         mainSV.addArrangedSubview(imageSegmentSV)
         imageSegmentSV.addArrangedSubview(imageBackgroundView)
         imageSegmentSV.addArrangedSubview(segmentBackgroundView)
-        imageSegmentSV.addArrangedSubview(timeLabel)
         imageBackgroundView.addSubview(imageView)
         
         imageSegmentSV.axis = .vertical
@@ -75,6 +83,8 @@ extension ViewController {
         segmentControl.translatesAutoresizingMaskIntoConstraints = false
         segmentBackgroundView.translatesAutoresizingMaskIntoConstraints = false
         imageBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+        pickerView.translatesAutoresizingMaskIntoConstraints = false
+
         NSLayoutConstraint.activate([
             imageSegmentSV.centerXAnchor.constraint(equalTo: mainSV.centerXAnchor),
             
@@ -97,6 +107,7 @@ extension ViewController {
     
     func configureLabel() {
         //UI
+        mainSV.addArrangedSubview(timeLabel)
         timeLabel.text = "00:00:00"
         timeLabel.font = UIFont.boldSystemFont(ofSize: 47)
         timeLabel.textAlignment = .center
@@ -140,5 +151,46 @@ extension ViewController {
             stopButton.heightAnchor.constraint(equalToConstant: 58)
         ])
     }
+    
+    func configurePickerView() {
+        //UI
+        mainSV.addArrangedSubview(pickerView)
+        
+        //Constraints
+        NSLayoutConstraint.activate([
+            pickerView.centerXAnchor.constraint(equalTo: mainSV.centerXAnchor),
+            pickerView.trailingAnchor.constraint(equalTo: mainSV.trailingAnchor, constant: 0),
+            pickerView.leadingAnchor.constraint(equalTo: mainSV.leadingAnchor, constant: 0)])
+    }
 }
 
+extension ViewController: UIPickerViewDelegate, UIPickerViewDataSource {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 3
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return component == 0 ? 24 : 60
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return String(format: "%02d", row)
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        switch component {
+        case 0:
+            hours = row
+        case 1:
+            minutes = row
+        case 2:
+            seconds = row
+        default:
+            break
+        }
+        
+        let formattedString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+        timeLabel.text = formattedString
+        print(formattedString)
+    }
+}

@@ -17,19 +17,27 @@ class ViewController: UIViewController {
     let pauseButton = UIButton()
     let stopButton = UIButton()
     let imageBackgroundView = UIView()
+    let pickerBackgroundView = UIView()
     let imageView = UIImageView()
     let segmentBackgroundView = UIView()
     let segmentControl = UISegmentedControl()
     let timeLabel = UILabel()
     let datePicker = UIDatePicker()
     let pickerView = UIPickerView()
-    private var hours: Int = 0
-    private var minutes: Int = 0
-    private var seconds: Int = 0
+    var hours: Int = 0
+    var minutes: Int = 0
+    var seconds: Int = 0
+    var time = 0
+    var startTime = 0
+    var timer = Timer()
+    var isTimerRunning = false
+    var counter = 1
+    var currentTime = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemYellow
+        pickerView.isHidden = true
         configureMainSV()
         
         pickerView.delegate = self
@@ -38,7 +46,7 @@ class ViewController: UIViewController {
 }
 
 extension ViewController {
-        //MARK: UI Elements and contraints
+    //MARK: UI Elements and contraints
     func configureMainSV() {
             //UI
         view.addSubview(mainSV)
@@ -76,6 +84,7 @@ extension ViewController {
         segmentControl.insertSegment(withTitle: "Timer", at: 0, animated: false)
         segmentControl.insertSegment(withTitle: "Stopwatch", at: 1, animated: false)
         segmentControl.selectedSegmentIndex = 0
+        segmentControl.addTarget(self, action: #selector(segmentTouched), for: .valueChanged)
         
         //Constraints
         imageSegmentSV.translatesAutoresizingMaskIntoConstraints = false
@@ -154,13 +163,21 @@ extension ViewController {
     
     func configurePickerView() {
         //UI
-        mainSV.addArrangedSubview(pickerView)
+        mainSV.addArrangedSubview(pickerBackgroundView)
+        pickerBackgroundView.addSubview(pickerView)
         
         //Constraints
+        pickerBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+        pickerView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            pickerView.centerXAnchor.constraint(equalTo: mainSV.centerXAnchor),
-            pickerView.trailingAnchor.constraint(equalTo: mainSV.trailingAnchor, constant: 0),
-            pickerView.leadingAnchor.constraint(equalTo: mainSV.leadingAnchor, constant: 0)])
+            pickerBackgroundView.trailingAnchor.constraint(equalTo: mainSV.trailingAnchor, constant: 0),
+            pickerBackgroundView.leadingAnchor.constraint(equalTo: mainSV.leadingAnchor, constant: 0),
+            pickerBackgroundView.heightAnchor.constraint(equalToConstant: 200),
+            
+            pickerView.centerXAnchor.constraint(equalTo: pickerBackgroundView.centerXAnchor),
+            pickerView.trailingAnchor.constraint(equalTo: pickerBackgroundView.trailingAnchor, constant: 0),
+            pickerView.leadingAnchor.constraint(equalTo: pickerBackgroundView.leadingAnchor, constant: 0),
+        ])
     }
 }
 
@@ -192,5 +209,39 @@ extension ViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         let formattedString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         timeLabel.text = formattedString
         print(formattedString)
+    }
+}
+
+extension ViewController {
+    
+    @objc func segmentTouched(_ sender: UISegmentedControl) {
+        if sender.selectedSegmentIndex == 0 {
+            if isTimerRunning {
+//                clean()
+            }
+            pickerView.isHidden = true
+            counter = 1
+        } else if sender.selectedSegmentIndex == 1{
+            if isTimerRunning {
+//                clean()
+            }
+            pickerView.isHidden = false
+            counter = 2
+        }
+    }
+    
+    func clean(){
+        timer.invalidate()
+        time = startTime
+        isTimerRunning = false
+        timeLabel.text = timeToString(intTime: time)
+    }
+    
+    func timeToString(intTime: Int) -> String{
+        let seconds = intTime % 60
+        let minutes = (intTime / 60) % 60
+        let hours = intTime / 3600
+        
+        return String(format: "%0.2d:%0.2d:%0.2d", hours,minutes,seconds)
     }
 }

@@ -33,6 +33,10 @@ class ViewController: UIViewController {
     var isTimerRunning = false
     var counter = 1
     var currentTime = 0
+    var timeInSeconds = 0
+    var playButtonTouched = false
+    var pauseButtonTouched = false
+    var stopButtonTouched = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -85,6 +89,7 @@ extension ViewController {
         segmentControl.insertSegment(withTitle: "Stopwatch", at: 1, animated: false)
         segmentControl.selectedSegmentIndex = 0
         segmentControl.addTarget(self, action: #selector(segmentTouched), for: .valueChanged)
+        segmentControl.addTarget(self, action: #selector(clean), for: .valueChanged)
         
         //Constraints
         imageSegmentSV.translatesAutoresizingMaskIntoConstraints = false
@@ -137,12 +142,13 @@ extension ViewController {
         buttonsSV.axis = .horizontal
         buttonsSV.spacing = 47
         
-        stopButton.setBackgroundImage(UIImage(systemName: "stop.circle.fill"), for: .normal)
         stopButton.tintColor = .black
-        pauseButton.setBackgroundImage(UIImage(systemName: "pause.circle.fill"), for: .normal)
+        stopButton.addTarget(self, action: #selector(stop), for: .touchDown)
         pauseButton.tintColor = .black
-        playButton.setBackgroundImage(UIImage(systemName: "play.circle.fill"), for: .normal)
+        pauseButton.addTarget(self, action: #selector(pause), for: .touchDown)
         playButton.tintColor = .black
+        playButton.addTarget(self, action: #selector(play), for: .touchDown)
+        setImagesForButtons()
         
         //Constraints
         buttonsSV.translatesAutoresizingMaskIntoConstraints = false
@@ -207,41 +213,164 @@ extension ViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         }
         
         let formattedString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-        timeLabel.text = formattedString
+        timeInSeconds = hours * 3600 + minutes * 60 + seconds
+        timeLabel.text = formattedString //String(timeInSeconds)
         print(formattedString)
     }
 }
 
 extension ViewController {
-    
+    //segment function
     @objc func segmentTouched(_ sender: UISegmentedControl) {
         if sender.selectedSegmentIndex == 0 {
             if isTimerRunning {
-//                clean()
+                clean()
             }
             pickerView.isHidden = true
             counter = 1
         } else if sender.selectedSegmentIndex == 1{
             if isTimerRunning {
-//                clean()
+                clean()
             }
             pickerView.isHidden = false
             counter = 2
         }
     }
     
-    func clean(){
-        timer.invalidate()
-        time = startTime
-        isTimerRunning = false
-        timeLabel.text = timeToString(intTime: time)
-    }
+    //MARK: Functions timer
     
+    //func clean
+    @objc func clean(){
+        timer.invalidate()
+        time = 0
+        currentTime = 0
+        timeLabel.text = timeToString(intTime: time)
+        isTimerRunning = false
+        timeInSeconds = 0
+        stopButtonTouched = false
+        playButtonTouched = false
+        pauseButtonTouched = false
+        setImagesForButtons()
+        if counter == 2 {
+            showPickerView()
+        }
+    }
+    //func time to string
     func timeToString(intTime: Int) -> String{
         let seconds = intTime % 60
         let minutes = (intTime / 60) % 60
         let hours = intTime / 3600
-        
         return String(format: "%0.2d:%0.2d:%0.2d", hours,minutes,seconds)
+    }
+    
+    //func stop button
+    @objc func stop() {
+        stopButtonTouched = true
+        playButtonTouched = false
+        pauseButtonTouched = false
+        setImagesForButtons()
+        
+        clean()
+    }
+    
+    //func play button
+    @objc func play() {
+        stopButtonTouched = false
+        playButtonTouched = true
+        pauseButtonTouched = false
+        setImagesForButtons()
+        
+        if isTimerRunning{
+            return
+        }
+        //timer
+        if counter == 1 {
+            time = 0
+            if currentTime != 0 {
+                time = currentTime
+            }
+            timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(countTimer), userInfo: nil, repeats: true)
+            
+        }
+        //stopwatch
+        else if counter == 2 {
+            time = timeInSeconds
+            if currentTime != 0 {
+                time = currentTime
+                
+            }
+            if time == 0 {
+                timer.invalidate()
+                return
+            }
+            timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(countStopWatch), userInfo: nil, repeats: true)
+            timeInSeconds = 0
+        }
+        isTimerRunning = true
+    }
+    
+    //timer function
+    @objc func countTimer(){
+        time += 1
+        timeLabel.text = timeToString(intTime: time)
+    }
+    
+    //stopwatch function
+    @objc func countStopWatch() {
+        time -= 1
+        timeLabel.text = timeToString(intTime: time)
+        pickerView.isHidden = true
+        
+        if time == 0 {
+            showPickerView()
+            timer.invalidate()
+            isTimerRunning = false
+            currentTime = 0
+        }
+    }
+    
+    @objc func pause() {
+        stopButtonTouched = false
+        playButtonTouched = false
+        pauseButtonTouched = true
+        setImagesForButtons()
+        currentTime = time
+        print(currentTime)
+        timer.invalidate()
+        isTimerRunning = false
+    }
+    
+    func showPickerView() {
+        for component in 0..<self.pickerView.numberOfComponents {
+            self.pickerView.selectRow(0, inComponent: component, animated: false)
+            self.pickerView.reloadComponent(component)
+        }
+        pickerView.isHidden = false
+    }
+    
+    func setImagesForButtons() {
+        if !playButtonTouched && !stopButtonTouched && !pauseButtonTouched {
+            playButton.setBackgroundImage(UIImage(systemName: "play.circle.fill"), for: .normal)
+            pauseButton.setBackgroundImage(UIImage(systemName: "pause.circle.fill"), for: .normal)
+            stopButton.setBackgroundImage(UIImage(systemName: "stop.circle.fill"), for: .normal)
+        }
+        
+        if playButtonTouched {
+            playButton.setBackgroundImage(UIImage(systemName: "play.circle"), for: .normal)
+            pauseButton.setBackgroundImage(UIImage(systemName: "pause.circle.fill"), for: .normal)
+            stopButton.setBackgroundImage(UIImage(systemName: "stop.circle.fill"), for: .normal)
+        }
+        
+        if pauseButtonTouched {
+            playButton.setBackgroundImage(UIImage(systemName: "play.circle.fill"), for: .normal)
+            pauseButton.setBackgroundImage(UIImage(systemName: "pause.circle"), for: .normal)
+            stopButton.setBackgroundImage(UIImage(systemName: "stop.circle.fill"), for: .normal)
+        }
+        
+        if stopButtonTouched {
+            playButton.setBackgroundImage(UIImage(systemName: "play.circle.fill"), for: .normal)
+            pauseButton.setBackgroundImage(UIImage(systemName: "pause.circle.fill"), for: .normal)
+            stopButton.setBackgroundImage(UIImage(systemName: "stop.circle"), for: .normal)
+        }
     }
 }

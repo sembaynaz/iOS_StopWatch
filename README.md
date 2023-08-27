@@ -21,17 +21,28 @@ My code consists of three sections (you can refer to the MARK comments):
 3. Project Functionality
 
 If you are learning to create projects without storyboards, it will be very useful to see how to configure various elements in code.
-Wat func I have: (PV = PickerView)
+What func I have: (PV = PickerView)
+
 func segmentTouched() - for hidden PV and zeroing the counter
+
 func whenPVValueChanged() - for set button images
+
 func clean() - zeroing the counter
+
 func timeToString() - for displaying to label
+
 func stop() - func when tapped stop button
+
 func play() - func when tapped play button
+
 func countTimer() - functionality of the Timer segment (time += 1)
+
 func countStopWatch() - functionality of the StopWatch segment (time -= 1)
+
 func pause() - func when tapped pause button
+
 func showPickerView() - zeroing the PV
+
 func setImagesForButtons() - images changes
 
 

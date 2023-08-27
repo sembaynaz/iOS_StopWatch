@@ -8,11 +8,10 @@
 import UIKit
 
 class ViewController: UIViewController {
-    
+    // MARK: UI Elements
     let mainSV = UIStackView()
     let imageSegmentSV = UIStackView()
     let buttonsSV = UIStackView()
-    let stackLabelSV = UIStackView()
     let playButton = UIButton()
     let pauseButton = UIButton()
     let stopButton = UIButton()
@@ -22,13 +21,11 @@ class ViewController: UIViewController {
     let segmentBackgroundView = UIView()
     let segmentControl = UISegmentedControl()
     let timeLabel = UILabel()
-    let datePicker = UIDatePicker()
-    let pickerView = UIPickerView()
+    lazy var pickerView = UIPickerView()
     var hours: Int = 0
     var minutes: Int = 0
     var seconds: Int = 0
     var time = 0
-    var startTime = 0
     var timer = Timer()
     var isTimerRunning = false
     var counter = 1
@@ -89,7 +86,6 @@ extension ViewController {
         segmentControl.insertSegment(withTitle: "Stopwatch", at: 1, animated: false)
         segmentControl.selectedSegmentIndex = 0
         segmentControl.addTarget(self, action: #selector(segmentTouched), for: .valueChanged)
-        segmentControl.addTarget(self, action: #selector(clean), for: .valueChanged)
         
         //Constraints
         imageSegmentSV.translatesAutoresizingMaskIntoConstraints = false
@@ -127,6 +123,7 @@ extension ViewController {
         timeLabel.textAlignment = .center
         
         //Constraints
+        timeLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             timeLabel.centerXAnchor.constraint(equalTo: mainSV.centerXAnchor)
         ])
@@ -188,6 +185,7 @@ extension ViewController {
 }
 
 extension ViewController: UIPickerViewDelegate, UIPickerViewDataSource {
+    // MARK: PickerView ui
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 3
     }
@@ -197,7 +195,7 @@ extension ViewController: UIPickerViewDelegate, UIPickerViewDataSource {
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return String(format: "%02d", row)
+        return String(row)
     }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
@@ -212,10 +210,10 @@ extension ViewController: UIPickerViewDelegate, UIPickerViewDataSource {
             break
         }
         
+        whenPVValueChanged()
         let formattedString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         timeInSeconds = hours * 3600 + minutes * 60 + seconds
         timeLabel.text = formattedString //String(timeInSeconds)
-        print(formattedString)
     }
 }
 
@@ -223,34 +221,42 @@ extension ViewController {
     //segment function
     @objc func segmentTouched(_ sender: UISegmentedControl) {
         if sender.selectedSegmentIndex == 0 {
-            if isTimerRunning {
-                clean()
-            }
+            imageView.image = UIImage(systemName: "timer")
+            clean()
             pickerView.isHidden = true
             counter = 1
         } else if sender.selectedSegmentIndex == 1{
-            if isTimerRunning {
-                clean()
-            }
+            clean()
+            imageView.image = UIImage(systemName: "stopwatch")
             pickerView.isHidden = false
             counter = 2
         }
     }
     
-    //MARK: Functions timer
+    func whenPVValueChanged() {
+        stopButtonTouched = false
+        playButtonTouched = false
+        pauseButtonTouched = false
+        setImagesForButtons()
+    }
+    
+    //MARK: Functions timer and segment
     
     //func clean
     @objc func clean(){
         timer.invalidate()
         time = 0
         currentTime = 0
-        timeLabel.text = timeToString(intTime: time)
+        timeLabel.text = timeToString(intTime: 0)
         isTimerRunning = false
         timeInSeconds = 0
         stopButtonTouched = false
         playButtonTouched = false
         pauseButtonTouched = false
         setImagesForButtons()
+        hours = 0
+        seconds = 0
+        minutes = 0
         if counter == 2 {
             showPickerView()
         }
@@ -281,6 +287,9 @@ extension ViewController {
         setImagesForButtons()
         
         if isTimerRunning{
+            stopButtonTouched = false
+            playButtonTouched = false
+            pauseButtonTouched = false
             return
         }
         //timer
@@ -297,7 +306,6 @@ extension ViewController {
             time = timeInSeconds
             if currentTime != 0 {
                 time = currentTime
-                
             }
             if time == 0 {
                 timer.invalidate()
@@ -335,7 +343,6 @@ extension ViewController {
         pauseButtonTouched = true
         setImagesForButtons()
         currentTime = time
-        print(currentTime)
         timer.invalidate()
         isTimerRunning = false
     }

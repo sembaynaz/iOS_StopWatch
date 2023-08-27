@@ -1,6 +1,6 @@
 # iOS_StopWatch
-<img width = "275" height = "625" src = "https://github.com/sembaynaz/iOS_StopWatch/assets/96616194/b92e630e-7710-43b4-b49b-53ea0af173f4">
-<img width = "550" height = "625" src = "https://github.com/sembaynaz/iOS_StopWatch/assets/96616194/da910229-7c28-460f-85de-cfb0a302e6ce">
+<img width = "275" height = "525" src = "https://github.com/sembaynaz/iOS_StopWatch/assets/96616194/b92e630e-7710-43b4-b49b-53ea0af173f4">
+<img width = "275" height = "525" src = "https://github.com/sembaynaz/iOS_StopWatch/assets/96616194/da910229-7c28-460f-85de-cfb0a302e6ce">
 
 ## Project Description
 The iOS_StopWatch project is a simple stopwatch and timer app built for iOS using UIKit (no Storyboard). It allows users to switch between a timer mode and a stopwatch mode, set time durations, and control the start, pause, and reset functionalities.
